@@ -1,0 +1,5 @@
+/.idea/
+/ktor-sample-app/
+*.iml
+.gradle/
+build/
