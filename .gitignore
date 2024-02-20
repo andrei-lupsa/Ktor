@@ -1,5 +1,7 @@
 /.idea/
-/ktor-sample-app/
 *.iml
 .gradle/
 build/
+/ktor-sample-app/
+/tutorial-http-api/
+/coroutinedemo/
