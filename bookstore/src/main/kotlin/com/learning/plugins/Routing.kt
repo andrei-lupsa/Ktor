@@ -1,5 +1,6 @@
 package com.learning.plugins
 
+import com.learning.routes.bookRouting
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.http.content.*
@@ -14,6 +15,7 @@ fun Application.configureRouting() {
         }
     }
     routing {
+        bookRouting()
         get("/") {
             call.respondText("Hello World!")
         }
