@@ -1,0 +1,229 @@
+### Get all books
+GET localhost:8080/book
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.test("Response content-type is json", function () {
+        const type = response.contentType.mimeType;
+        client.assert(type === "application/json", `Expected 'application/json' but received '${type}'`);
+    });
+    client.test("Response contains 7 books", function () {
+        const size = response.body.length;
+        client.assert(size === 7, `Expected '7' but received '${size}'`);
+    });
+%}
+
+### Delete book #1
+DELETE localhost:8080/book/1
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.test("Response content-type is json", function () {
+        const type = response.contentType.mimeType;
+        client.assert(type === "application/json", `Expected 'application/json' but received '${type}'`);
+    });
+    client.test("Deleted book was about oranges", function () {
+        const title = response.body["title"]
+        const expectedTitle = "How to grow oranges"
+        client.assert(title === expectedTitle, `Expected '${expectedTitle}' but received '${title}'`);
+    });
+%}
+
+### Get all books again
+GET localhost:8080/book
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.test("Response content-type is json", function () {
+        const type = response.contentType.mimeType;
+        client.assert(type === "application/json", `Expected 'application/json' but received '${type}'`);
+    });
+    client.test("Response contains 6 books", function () {
+        const size = response.body.length;
+        client.assert(size === 6, `Expected '6' but received '${size}'`);
+    });
+%}
+
+### Create new book
+< {%
+    client.global.clearAll()
+    client.global.set("title", "How to use Ubuntu")
+    client.global.set("author", "Mr. LinuxHappy")
+    client.global.set("price", "180.5")
+%}
+PUT localhost:8080/book
+Content-Type: application/json
+
+{
+  "title": "{{title}}",
+  "author": "{{author}}",
+  "price": {{price}}
+}
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.test("Response content-type is json", function () {
+        const type = response.contentType.mimeType;
+        client.assert(type === "application/json", `Expected 'application/json' but received '${type}'`);
+    });
+    client.test("Response contains saved book", function () {
+        client.assert(response.body["id"] !== null, `New id is expected to be created`);
+        client.assert(response.body["title"] === client.global.get("title"),
+            `Expected title '${client.global.get("title")}' but received '${response.body["title"]}'`)
+        client.assert(response.body["author"] === client.global.get("author"),
+            `Expected author '${client.global.get("author")}' but received '${response.body["author"]}'`)
+        client.assert(response.body["price"] === +client.global.get("price"),
+            `Expected price '${client.global.get("price")}' but received '${response.body["price"]}'`)
+    });
+    client.global.set("newBookId", response.body["id"])
+%}
+
+### Get created book by id
+GET localhost:8080/book/{{newBookId}}
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.test("Response content-type is json", function () {
+        const type = response.contentType.mimeType;
+        client.assert(type === "application/json", `Expected 'application/json' but received '${type}'`);
+    });
+    client.test("Response contains saved book", function () {
+        client.assert(response.body["id"] === client.global.get("newBookId"),
+            `Expected id '${client.global.get("newBookId")}' but received '${response.body["id"]}'`);
+        client.assert(response.body["title"] === client.global.get("title"),
+            `Expected title '${client.global.get("title")}' but received '${response.body["title"]}'`)
+        client.assert(response.body["author"] === client.global.get("author"),
+            `Expected author '${client.global.get("author")}' but received '${response.body["author"]}'`)
+        client.assert(response.body["price"] === +client.global.get("price"),
+            `Expected price '${client.global.get("price")}' but received '${response.body["price"]}'`)
+    });
+%}
+
+### Update unexisting book
+< {%
+    client.global.clearAll()
+    client.global.set("title", "How to grow lemons 2.0")
+    client.global.set("author", "Mr. Lemon")
+    client.global.set("price", "60.8")
+%}
+POST localhost:8080/book/125
+Content-Type: application/json
+
+{
+  "id": "125",
+  "title": "{{title}}",
+  "author": "{{author}}",
+  "price": {{price}}
+}
+
+> {%
+    client.test("Book was not found", function () {
+        client.assert(response.status === 404, "Response status is not 404");
+    });
+%}
+
+### Update with inconsistent id
+< {%
+    client.global.clearAll()
+    client.global.set("title", "How to grow lemons 2.0")
+    client.global.set("author", "Mr. Lemon")
+    client.global.set("price", "60.8")
+%}
+POST localhost:8080/book/2
+Content-Type: application/json
+
+{
+  "id": "125",
+  "title": "{{title}}",
+  "author": "{{author}}",
+  "price": {{price}}
+}
+
+> {%
+    client.test("Internal error", function () {
+        client.assert(response.status === 500, "Response status is not 500");
+        client.assert(response.body === "500: java.lang.IllegalArgumentException: Inconsistent book id",
+            `Unexpected response body '${response.body}'`)
+    });
+%}
+
+### Update book
+< {%
+    client.global.clearAll()
+    client.global.set("title", "How to grow lemons 2.0")
+    client.global.set("author", "Mr. Lemon")
+    client.global.set("price", "60.8")
+%}
+POST localhost:8080/book/2
+Content-Type: application/json
+
+{
+  "id": "2",
+  "title": "{{title}}",
+  "author": "{{author}}",
+  "price": {{price}}
+}
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.test("Response content-type is json", function () {
+        const type = response.contentType.mimeType;
+        client.assert(type === "application/json", `Expected 'application/json' but received '${type}'`);
+    });
+    client.test("Response contains updated book", function () {
+        client.assert(response.body["id"] === "2", `Expected id '2' but received '${response.body["id"]}'`);
+        client.assert(response.body["title"] === client.global.get("title"),
+            `Expected title '${client.global.get("title")}' but received '${response.body["title"]}'`)
+        client.assert(response.body["author"] === client.global.get("author"),
+            `Expected author '${client.global.get("author")}' but received '${response.body["author"]}'`)
+        client.assert(response.body["price"] === +client.global.get("price"),
+            `Expected price '${client.global.get("price")}' but received '${response.body["price"]}'`)
+    });
+%}
+
+### Update book without id in the body
+< {%
+    client.global.clearAll()
+    client.global.set("title", "How to grow lemons 3.0")
+    client.global.set("author", "Mr. Lemon")
+    client.global.set("price", "60.8")
+%}
+POST localhost:8080/book/2
+Content-Type: application/json
+
+{
+  "title": "{{title}}",
+  "author": "{{author}}",
+  "price": {{price}}
+}
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.test("Response content-type is json", function () {
+        const type = response.contentType.mimeType;
+        client.assert(type === "application/json", `Expected 'application/json' but received '${type}'`);
+    });
+    client.test("Response contains updated book", function () {
+        client.assert(response.body["id"] === "2", `Expected id '2' but received '${response.body["id"]}'`);
+        client.assert(response.body["title"] === client.global.get("title"),
+            `Expected title '${client.global.get("title")}' but received '${response.body["title"]}'`)
+        client.assert(response.body["author"] === client.global.get("author"),
+            `Expected author '${client.global.get("author")}' but received '${response.body["author"]}'`)
+        client.assert(response.body["price"] === +client.global.get("price"),
+            `Expected price '${client.global.get("price")}' but received '${response.body["price"]}'`)
+    });
+%}

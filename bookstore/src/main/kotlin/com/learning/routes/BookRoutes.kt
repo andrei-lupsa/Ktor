@@ -11,7 +11,7 @@ import io.ktor.server.routing.*
 fun Route.bookRouting() {
     route("/book") {
         get {//get all books at GET /book
-            call.respond(DataManager.books)
+            call.respond(DataManager.books.values)
         }
         get("/{id}") {//get book by id
             val bookId = call.parameters["id"] ?: return@get call.respondText(
