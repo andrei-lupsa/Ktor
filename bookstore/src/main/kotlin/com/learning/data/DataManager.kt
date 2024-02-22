@@ -1,8 +1,12 @@
 package com.learning.data
 
+import io.ktor.util.logging.*
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.reflect.full.declaredMemberProperties
 
 object DataManager {
+    private val log = KtorSimpleLogger(DataManager.javaClass.name)
+
     private val bookId = AtomicInteger()
     val books = hashMapOf<String, Book>()
 
@@ -35,5 +39,16 @@ object DataManager {
 
     fun deleteBook(bookId: String): Book? {
         return books.remove(bookId)
+    }
+
+    fun sortedBooks(sortby: String, asc: Boolean): Collection<Book> {
+        val member = Book::class.declaredMemberProperties.find { it.name == sortby } ?: return books.values.also {
+            log.warn("The field to sort by does not exist")
+        }
+        return if (asc) {
+            books.values.sortedBy { member.get(it).toString() }
+        } else {
+            books.values.sortedByDescending { member.get(it).toString() }
+        }
     }
 }

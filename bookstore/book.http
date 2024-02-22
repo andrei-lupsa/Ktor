@@ -1,3 +1,39 @@
+### Get books sorted by title
+GET localhost:8080/book/list?sortby=title&asc=true
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.test("Response content-type is json", function () {
+        const type = response.contentType.mimeType;
+        client.assert(type === "application/json", `Expected 'application/json' but received '${type}'`);
+    });
+    client.test("Check first book title", function () {
+        const title = response.body[0].title
+        const expectedTitle = "How to grow apples"
+        client.assert(title === expectedTitle, `Expected '${expectedTitle}' but received '${title}'`);
+    });
+%}
+
+### Get books sorted by title in reverse
+GET localhost:8080/book/list?sortby=title&asc=false
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.test("Response content-type is json", function () {
+        const type = response.contentType.mimeType;
+        client.assert(type === "application/json", `Expected 'application/json' but received '${type}'`);
+    });
+    client.test("Check first book title", function () {
+        const title = response.body[0].title
+        const expectedTitle = "How to grow pineapples"
+        client.assert(title === expectedTitle, `Expected '${expectedTitle}' but received '${title}'`);
+    });
+%}
+
 ### Get all books
 GET localhost:8080/book
 
