@@ -5,6 +5,7 @@ import com.learning.data.DataManager
 import io.ktor.http.*
 import io.ktor.resources.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.resources.*
 import io.ktor.server.response.*
@@ -13,7 +14,15 @@ import io.ktor.server.routing.*
 @Resource("/list")
 data class BookListResource(val sortby: String, val asc: Boolean)
 
+@Resource("/api/book/list")
+data class AuthBookListResource(val sortby: String, val asc: Boolean)
+
 fun Route.bookRouting() {
+    authenticate("bookStoreAuth") {
+        get<AuthBookListResource> { bookList ->
+            call.respond(DataManager.sortedBooks(bookList.sortby, bookList.asc))
+        }
+    }
     route("/book") {
         get {//get all books at GET /book
             call.respond(DataManager.books.values)

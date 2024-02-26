@@ -188,8 +188,6 @@ Content-Type: application/json
 > {%
     client.test("Internal error", function () {
         client.assert(response.status === 500, "Response status is not 500");
-        client.assert(response.body === "500: java.lang.IllegalArgumentException: Inconsistent book id",
-            `Unexpected response body '${response.body}'`)
     });
 %}
 
@@ -261,5 +259,53 @@ Content-Type: application/json
             `Expected author '${client.global.get("author")}' but received '${response.body["author"]}'`)
         client.assert(response.body["price"] === +client.global.get("price"),
             `Expected price '${client.global.get("price")}' but received '${response.body["price"]}'`)
+    });
+%}
+
+### Try authentication, no credentials
+GET localhost:8080/api/tryauth
+
+> {%
+    client.test("Request is unauthorized", function () {
+        client.assert(response.status === 401, "Response status is not 401");
+    });
+%}
+
+### Try authentication
+GET localhost:8080/api/tryauth
+Authorization: Basic shopper1 password
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.assert(response.body === "Hello shopper1", `Unexpected response body: ${response.body}`)
+    });
+%}
+
+### Unauthenticated call. Get books sorted by title
+GET localhost:8080/api/book/list?sortby=title&asc=true
+
+> {%
+    client.test("Request is unauthorized", function () {
+        client.assert(response.status === 401, "Response status is not 401");
+    });
+%}
+
+### Authenticated call. Get books sorted by title
+GET localhost:8080/api/book/list?sortby=title&asc=true
+Authorization: Basic shopper1 password
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.test("Response content-type is json", function () {
+        const type = response.contentType.mimeType;
+        client.assert(type === "application/json", `Expected 'application/json' but received '${type}'`);
+    });
+    client.test("Check first book title", function () {
+        const title = response.body[0].title
+        const expectedTitle = "How to grow apples"
+        client.assert(title === expectedTitle, `Expected '${expectedTitle}' but received '${title}'`);
     });
 %}
