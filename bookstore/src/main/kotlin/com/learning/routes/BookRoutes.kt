@@ -25,7 +25,7 @@ fun Route.bookRouting() {
     }
     route("/book") {
         get {//get all books at GET /book
-            call.respond(DataManager.books.values)
+            call.respond(DataManager.allBooks())
         }
         get<BookListResource> { bookList ->
             call.respond(DataManager.sortedBooks(bookList.sortby, bookList.asc))
@@ -35,7 +35,7 @@ fun Route.bookRouting() {
                 "Missing id",
                 status = HttpStatusCode.BadRequest
             )
-            val book = DataManager.books[bookId] ?: return@get call.respond(HttpStatusCode.NotFound)
+            val book = DataManager.findBook(bookId) ?: return@get call.respond(HttpStatusCode.NotFound)
             call.respond(book)
         }
         post("/{id}") {//update book
@@ -51,7 +51,7 @@ fun Route.bookRouting() {
         }
         put {//create book
             val book = call.receive<Book>()
-            val newBook = DataManager.newBook(book)
+            val newBook = DataManager.newBook(book) ?: throw IllegalStateException("No book was saved")
             call.respond(newBook)
         }
         delete("/{id}") {
