@@ -1,6 +1,6 @@
 package com.learning.ui.home
 
-import com.learning.routes.Session
+import com.learning.data.Cart
 import com.learning.ui.GeneralViewTemplate
 import io.ktor.server.html.*
 import kotlinx.html.HTML
@@ -8,8 +8,8 @@ import kotlinx.html.div
 import kotlinx.html.h2
 import kotlinx.html.p
 
-class HomeTemplate(session: Session?) : Template<HTML> {
-    private val basicTemplate = GeneralViewTemplate(session)
+class HomeTemplate(cart: Cart?) : Template<HTML> {
+    private val basicTemplate = GeneralViewTemplate(cart)
     override fun HTML.apply() {
         insert(basicTemplate) {
             content {

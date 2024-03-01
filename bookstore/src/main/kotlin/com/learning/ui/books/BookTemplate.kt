@@ -1,14 +1,14 @@
 package com.learning.ui.books
 
 import com.learning.data.Book
-import com.learning.routes.Session
+import com.learning.data.Cart
 import com.learning.ui.Endpoints
 import com.learning.ui.GeneralViewTemplate
 import io.ktor.server.html.*
 import kotlinx.html.*
 
-class BookTemplate(session: Session?, private val books: List<Book>) : Template<HTML> {
-    private val basicTemplate: GeneralViewTemplate = GeneralViewTemplate(session)
+class BookTemplate(cart: Cart, private val books: List<Book>) : Template<HTML> {
+    private val basicTemplate: GeneralViewTemplate = GeneralViewTemplate(cart)
     val searchfilter = Placeholder<FlowContent>()
     override fun HTML.apply() {
         insert(basicTemplate) {
@@ -19,7 +19,7 @@ class BookTemplate(session: Session?, private val books: List<Book>) : Template<
                     form(
                         method = FormMethod.post,
                         encType = FormEncType.multipartFormData,
-                        action = Endpoints.DOBOOKSEARCH.url
+                        action = Endpoints.BOOK_SEARCH.url
                     ) {
                         div(classes = "row mb-3 mt-3") {
                             div(classes = "md-6") {
@@ -50,13 +50,22 @@ class BookTemplate(session: Session?, private val books: List<Book>) : Template<
                         tbody {
                             books.forEach {
                                 tr {
-                                    td { +"${it.id}" }
+                                    td { +it.id!! }
                                     td { +it.title }
                                     td { +it.author }
                                     td { +"${it.price}" }
                                     td {
-                                        button(classes = "btn btn-success", type = ButtonType.submit) {
-                                            +"Add to cart"
+                                        form(
+                                            method = FormMethod.post,
+                                            encType = FormEncType.multipartFormData,
+                                            action = Endpoints.ADD_TO_CART.url
+                                        ) {
+                                            button(classes = "btn btn-success", type = ButtonType.submit) {
+                                                +"Add to cart"
+                                            }
+                                            input(type = InputType.hidden, name = "bookid") {
+                                                value = it.id!!
+                                            }
                                         }
                                     }
                                 }

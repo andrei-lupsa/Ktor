@@ -1,27 +1,30 @@
 package com.learning.data
 
+import com.learning.routes.Session
 import com.mongodb.client.model.Filters.*
 import com.mongodb.client.model.FindOneAndReplaceOptions
 import com.mongodb.client.model.ReturnDocument
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.kotlin.client.coroutine.MongoCollection
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.singleOrNull
-import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 import org.bson.Document
 import org.bson.types.ObjectId
+import org.slf4j.LoggerFactory
 
 object DataManager {
     private val bookCollection: MongoCollection<BookData>
+    private val cartCollection: MongoCollection<Cart>
+    private val log = LoggerFactory.getLogger(DataManager.javaClass)
 
     init {
         val mongoClient = MongoClient.create() //default mongodb://localhost
         val database = mongoClient.getDatabase("bookstore")
         bookCollection = database.getCollection("books")
+        cartCollection = database.getCollection("cart")
         runBlocking {
             bookCollection.deleteMany(empty())
+            cartCollection.deleteMany(empty())
             newBook(Book("How to grow apples", "Mr. Appleton", 100f))
             newBook(Book("How to grow oranges", "Mr. Orangeton", 90f))
             newBook(Book("How to grow lemons", "Mr. Lemon", 110f))
@@ -83,5 +86,36 @@ object DataManager {
             .sort(Document(mapOf("title" to 1, "_id" to -1)))
             .map { it.toBook() }
             .toList()
+    }
+
+    suspend fun updateCart(cart: Cart) {
+        val replaceOne = cartCollection.replaceOne(eq("username", cart.username), cart)
+        log.info("Update result: $replaceOne")
+    }
+
+    suspend fun addBook(session: Session, book: BookData) {
+        val cartForUser = cartForUser(session)
+        cartForUser.addBook(book)
+        updateCart(cartForUser)
+    }
+
+    suspend fun cartForUser(session: Session): Cart {
+        val find = cartCollection.find(eq("username", session.username))
+        if (find.count() == 0) {
+            val cart = Cart(session.username)
+            return cartCollection.insertOne(cart).insertedId!!
+                .let { cartCollection.find(eq("_id", it)).first() }
+        } else return find.first()
+    }
+
+    suspend fun getBookWithId(bookId: String): BookData {
+        log.info("Get book with id: $bookId")
+        return bookCollection.find(eq("_id", ObjectId(bookId))).first()
+    }
+
+    suspend fun removeBook(session: Session, book: BookData) {
+        val cartForUser = cartForUser(session)
+        cartForUser.removeBook(book)
+        updateCart(cartForUser)
     }
 }

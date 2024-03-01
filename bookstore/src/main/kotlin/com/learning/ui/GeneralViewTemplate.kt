@@ -1,10 +1,10 @@
 package com.learning.ui
 
-import com.learning.routes.Session
+import com.learning.data.Cart
 import io.ktor.server.html.*
 import kotlinx.html.*
 
-class GeneralViewTemplate(private val session: Session? = null) : Template<HTML> {
+class GeneralViewTemplate(private val cart: Cart? = null) : Template<HTML> {
     val content = Placeholder<HtmlBlockTag>()
 
     override fun HTML.apply() {
@@ -20,11 +20,11 @@ class GeneralViewTemplate(private val session: Session? = null) : Template<HTML>
         }
 
         body {
-            insert(NavigationTemplate()) {
+            insert(NavigationTemplate(cart)) {
                 menuitems {
                     a(classes = "nav-link", href = Endpoints.HOME.url) { +"Home" }
                 }
-                if (session == null) {
+                if (cart == null) {
                     menuitems {
                         a(classes = "nav-link", href = Endpoints.LOGIN.url) { +"Login" }
                     }

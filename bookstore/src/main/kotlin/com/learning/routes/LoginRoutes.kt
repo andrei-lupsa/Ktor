@@ -24,13 +24,14 @@ fun Route.loginRouting() {
     }
     get(Endpoints.HOME.url) {
         val session = call.sessions.get<Session>()
-        call.respondHtmlTemplate(HomeTemplate(session)) {}
+        val cart = session?.let { DataManager.cartForUser(it) }
+        call.respondHtmlTemplate(HomeTemplate(cart)) {}
     }
     get(Endpoints.LOGOUT.url) {
         call.sessions.clear(Constants.COOKIE_NAME.value)
         call.respondHtmlTemplate(LogoutTemplate()) {}
     }
-    post(Endpoints.DOLOGIN.url) {
+    post(Endpoints.LOGIN.url) {
         val log = LoggerFactory.getLogger("LoginView")
         val multipart = call.receiveMultipart()
 
@@ -53,7 +54,8 @@ fun Route.loginRouting() {
         if (SecurityHandler().isValid(username, password)) {
             val session = Session(username!!)
             call.sessions.set(Constants.COOKIE_NAME.value, session)
-            call.respondHtmlTemplate(BookTemplate(session, DataManager.allBooks())) {
+            val cart = DataManager.cartForUser(session)
+            call.respondHtmlTemplate(BookTemplate(cart, DataManager.allBooks())) {
                 searchfilter {
                     +"You are logged in as $username and a cookie has been created"
                 }

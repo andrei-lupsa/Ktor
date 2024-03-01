@@ -1,13 +1,12 @@
 package com.learning.ui.login
 
-import com.learning.routes.Session
 import com.learning.ui.Endpoints
 import com.learning.ui.GeneralViewTemplate
 import io.ktor.server.html.*
 import kotlinx.html.*
 
-class LoginTemplate(session: Session? = null) : Template<HTML> {
-    private val basicTemplate = GeneralViewTemplate(session)
+class LoginTemplate : Template<HTML> {
+    private val basicTemplate = GeneralViewTemplate()
     val greeting = Placeholder<FlowContent>()
     override fun HTML.apply() {
         insert(basicTemplate) {
@@ -23,7 +22,7 @@ class LoginTemplate(session: Session? = null) : Template<HTML> {
                 form(
                     method = FormMethod.post,
                     encType = FormEncType.multipartFormData,
-                    action = Endpoints.DOLOGIN.url
+                    action = Endpoints.LOGIN.url
                 ) {
                     div(classes = "mb-3") {
                         input(type = InputType.text, classes = "form-control", name = "username") {

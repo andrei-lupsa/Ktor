@@ -1,10 +1,12 @@
 package com.learning.ui
 
+import com.learning.data.Cart
 import io.ktor.server.html.*
 import kotlinx.html.*
 
-class NavigationTemplate : Template<FlowContent> {
+class NavigationTemplate(private val cart: Cart?) : Template<FlowContent> {
     val menuitems = PlaceholderList<UL, FlowContent>()
+
     override fun FlowContent.apply() {
         div {
             nav(classes = "navbar navbar-expand-md navbar-dark bg-dark") {
@@ -23,6 +25,15 @@ class NavigationTemplate : Template<FlowContent> {
                         each(menuitems) {
                             li {
                                 insert(it)
+                            }
+                        }
+                    }
+                }
+                div {
+                    if (cart != null) {
+                        form(action = Endpoints.CART.url) {
+                            button(classes = "btn btn-danger", type = ButtonType.submit) {
+                                +"Items in cart: ${cart.qtyTotal}, total price: ${cart.sum}"
                             }
                         }
                     }

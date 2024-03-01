@@ -22,6 +22,34 @@ data class Book(val id: String?, val title: String, val author: String, val pric
     }
 }
 
-data class ShoppingCart(val id: String, val userId: String, val items: ArrayList<ShoppingItem>)
-data class ShoppingItem(val bookId: String, val qty: Int)
-data class User(val id: String, val name: String, val username: String, val password: String)
+data class CartEntry(val book: BookData, var qty: Int, var sum: Float) {
+    constructor(book: BookData) : this(book, 1, book.price)
+}
+
+data class Cart(
+    @BsonId val id: ObjectId, val username: String, var qtyTotal: Int, var sum: Float,
+    val entries: MutableList<CartEntry> = ArrayList()
+) {
+    constructor(username: String) : this(ObjectId(), username, 0, 0f)
+
+    fun addBook(book: BookData) {
+        val find = entries.find { it.book.id == book.id }
+        if (find == null) {
+            entries.add(CartEntry(book))
+        } else {
+            find.qty += 1
+            find.sum += book.price
+        }
+        this.qtyTotal += 1
+        this.sum += book.price
+    }
+
+    fun removeBook(book: BookData) {
+        val find = entries.find { it.book.id == book.id } ?: return
+        find.qty -= 1
+        find.sum -= book.price
+        if (find.qty <= 0) entries.remove(find)
+        this.qtyTotal -= 1
+        this.sum -= book.price
+    }
+}

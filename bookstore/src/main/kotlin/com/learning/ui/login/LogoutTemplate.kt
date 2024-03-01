@@ -1,14 +1,13 @@
 package com.learning.ui.login
 
-import com.learning.routes.Session
 import com.learning.ui.GeneralViewTemplate
 import io.ktor.server.html.*
 import kotlinx.html.HTML
 import kotlinx.html.div
 import kotlinx.html.h2
 
-class LogoutTemplate(session: Session? = null) : Template<HTML> {
-    private val basicTemplate = GeneralViewTemplate(session)
+class LogoutTemplate : Template<HTML> {
+    private val basicTemplate = GeneralViewTemplate()
     override fun HTML.apply() {
         insert(basicTemplate) {
             content {

@@ -25,7 +25,7 @@ data class BookListResource(val sortby: String, val asc: Boolean)
 data class AuthBookListResource(val sortby: String, val asc: Boolean)
 
 fun Route.bookRouting() {
-    post(Endpoints.DOBOOKSEARCH.url) {
+    post(Endpoints.BOOK_SEARCH.url) {
         val log = LoggerFactory.getLogger("LoginView")
         val multipart = call.receiveMultipart()
         var search = ""
@@ -38,14 +38,18 @@ fun Route.bookRouting() {
             part.dispose()
         }
         val searchBooks = DataManager.searchBooks(search)
-        call.respondHtmlTemplate(BookTemplate(call.sessions.get<Session>(), searchBooks)) {
+        val session = call.sessions.get<Session>()!!
+        val cart = DataManager.cartForUser(session)
+        call.respondHtmlTemplate(BookTemplate(cart, searchBooks)) {
             searchfilter {
                 i { +"Search filter: $search" }
             }
         }
     }
     get(Endpoints.BOOKS.url) {
-        call.respondHtmlTemplate(BookTemplate(call.sessions.get<Session>(), DataManager.allBooks())) {}
+        val session = call.sessions.get<Session>()!!
+        val cart = DataManager.cartForUser(session)
+        call.respondHtmlTemplate(BookTemplate(cart, DataManager.allBooks())) {}
     }
     authenticate("bookStoreAuth") {
         get<AuthBookListResource> { bookList ->
