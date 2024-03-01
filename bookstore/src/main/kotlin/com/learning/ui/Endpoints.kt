@@ -9,5 +9,5 @@ enum class Endpoints(val url: String) {
     ADD_TO_CART("/html/cart/add"),
     REMOVE_FROM_CART("/html/cart/remove"),
     CART("/html/cart"),
-    CHECKOUT("/html/checkout")
+    RECEIPT("/html/checkout")
 }

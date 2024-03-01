@@ -6,7 +6,7 @@ import com.learning.ui.GeneralViewTemplate
 import io.ktor.server.html.*
 import kotlinx.html.*
 
-class CartTemplate(val cart: Cart) : Template<HTML> {
+class CartTemplate(private val cart: Cart) : Template<HTML> {
     private val basicTemplate = GeneralViewTemplate(cart)
 
     override fun HTML.apply() {
@@ -62,9 +62,9 @@ class CartTemplate(val cart: Cart) : Template<HTML> {
                 }
                 div(classes = "row mt-3") {
                     form(
-                        method = FormMethod.post,
+                        method = FormMethod.get,
                         encType = FormEncType.multipartFormData,
-                        action = Endpoints.CHECKOUT.url
+                        action = Endpoints.RECEIPT.url
                     ) {
                         button(classes = "btn btn-warning", type = ButtonType.submit) {
                             +"Check out and pay"

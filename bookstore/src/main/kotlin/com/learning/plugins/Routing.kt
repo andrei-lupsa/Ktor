@@ -3,6 +3,7 @@ package com.learning.plugins
 import com.learning.routes.bookRouting
 import com.learning.routes.cartRouting
 import com.learning.routes.loginRouting
+import com.learning.routes.receiptRouting
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -23,6 +24,7 @@ fun Application.configureRouting() {
         bookRouting()
         loginRouting()
         cartRouting()
+        receiptRouting()
         get("/") {
             call.respondText("Hello World!")
         }
