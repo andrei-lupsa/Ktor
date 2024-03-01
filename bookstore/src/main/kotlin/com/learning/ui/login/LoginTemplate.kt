@@ -1,26 +1,16 @@
 package com.learning.ui.login
 
+import com.learning.routes.Session
 import com.learning.ui.Endpoints
 import com.learning.ui.GeneralViewTemplate
 import io.ktor.server.html.*
 import kotlinx.html.*
 
-class LoginTemplate(val basicTemplate: GeneralViewTemplate = GeneralViewTemplate()) : Template<HTML> {
+class LoginTemplate(session: Session? = null) : Template<HTML> {
+    private val basicTemplate = GeneralViewTemplate(session)
     val greeting = Placeholder<FlowContent>()
     override fun HTML.apply() {
         insert(basicTemplate) {
-            menu {
-                menuitems {
-                    a(classes = "nav-link", href = Endpoints.HOME.url) {
-                        +"Home"
-                    }
-                }
-                menuitems {
-                    a(classes = "nav-link", href = Endpoints.LOGOUT.url) {
-                        +"Logout"
-                    }
-                }
-            }
             content {
                 div(classes = "mt-2") {
                     h2 {

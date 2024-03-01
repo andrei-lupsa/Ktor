@@ -1,24 +1,17 @@
 package com.learning.ui.home
 
-import com.learning.ui.Endpoints
+import com.learning.routes.Session
 import com.learning.ui.GeneralViewTemplate
 import io.ktor.server.html.*
-import kotlinx.html.*
+import kotlinx.html.HTML
+import kotlinx.html.div
+import kotlinx.html.h2
+import kotlinx.html.p
 
-class HomeTemplate(val basicTemplate: GeneralViewTemplate = GeneralViewTemplate()) : Template<HTML> {
+class HomeTemplate(session: Session?) : Template<HTML> {
+    private val basicTemplate = GeneralViewTemplate(session)
     override fun HTML.apply() {
         insert(basicTemplate) {
-            menu {
-                menuitems {
-                    a(classes = "nav-link", href = Endpoints.HOME.url) { +"Home" }
-                }
-                menuitems {
-                    a(classes = "nav-link", href = Endpoints.LOGIN.url) { +"Login" }
-                }
-                menuitems {
-                    a(classes = "nav-link", href = Endpoints.LOGOUT.url) { +"Logout" }
-                }
-            }
             content {
                 div(classes = "mt-2") {
                     h2 { +"Welcome to the Bookstore" }

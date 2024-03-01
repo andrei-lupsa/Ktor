@@ -1,7 +1,6 @@
 package com.learning.data
 
-import com.mongodb.client.model.Filters.empty
-import com.mongodb.client.model.Filters.eq
+import com.mongodb.client.model.Filters.*
 import com.mongodb.client.model.FindOneAndReplaceOptions
 import com.mongodb.client.model.ReturnDocument
 import com.mongodb.kotlin.client.coroutine.MongoClient
@@ -55,7 +54,10 @@ object DataManager {
     }
 
     suspend fun allBooks(): List<Book> {
-        return bookCollection.find().map { it.toBook() }.toList()
+        return bookCollection.find()
+            .sort(Document(mapOf("title" to 1, "_id" to -1)))
+            .map { it.toBook() }
+            .toList()
     }
 
     suspend fun sortedBooks(sortby: String, asc: Boolean): List<Book> {
@@ -67,6 +69,18 @@ object DataManager {
             .sort(Document(mapOf(sortby to ascInt, "_id" to -1)))
             .skip(pageSize * (pageno - 1))
             .limit(pageSize)
+            .map { it.toBook() }
+            .toList()
+    }
+
+    suspend fun searchBooks(str: String): List<Book> {
+        return bookCollection.find(
+            or(
+                regex("title", ".*$str.*"),
+                regex("author", ".*$str.*")
+            )
+        )
+            .sort(Document(mapOf("title" to 1, "_id" to -1)))
             .map { it.toBook() }
             .toList()
     }

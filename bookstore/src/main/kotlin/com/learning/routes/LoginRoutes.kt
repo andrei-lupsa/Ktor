@@ -1,10 +1,11 @@
 package com.learning.routes
 
+import com.learning.data.DataManager
 import com.learning.plugins.SecurityHandler
 import com.learning.ui.Constants
 import com.learning.ui.Endpoints
+import com.learning.ui.books.BookTemplate
 import com.learning.ui.home.HomeTemplate
-import com.learning.ui.login.LoginSuccessfulTemplate
 import com.learning.ui.login.LoginTemplate
 import com.learning.ui.login.LogoutTemplate
 import io.ktor.http.content.*
@@ -22,7 +23,8 @@ fun Route.loginRouting() {
         call.respondHtmlTemplate(LoginTemplate()) {}
     }
     get(Endpoints.HOME.url) {
-        call.respondHtmlTemplate(HomeTemplate()) {}
+        val session = call.sessions.get<Session>()
+        call.respondHtmlTemplate(HomeTemplate(session)) {}
     }
     get(Endpoints.LOGOUT.url) {
         call.sessions.clear(Constants.COOKIE_NAME.value)
@@ -39,29 +41,20 @@ fun Route.loginRouting() {
         var password: String? = null
         while (true) {
             val part = multipart.readPart() ?: break
-            when (part) {
-                is PartData.FormItem -> {
-                    log.info("FormItem: ${part.name} = ${part.value}")
-                    when (part.name) {
-                        "username" -> username = part.value
-                        "password" -> password = part.value
-                    }
-                }
-
-                is PartData.FileItem -> {
-                    log.info("FileItem: ${part.name} -> ${part.originalFileName} of ${part.contentType}")
-                }
-
-                else -> {
-                    //ignore
+            if (part is PartData.FormItem) {
+                log.info("FormItem: ${part.name} = ${part.value}")
+                when (part.name) {
+                    "username" -> username = part.value
+                    "password" -> password = part.value
                 }
             }
             part.dispose()
         }
         if (SecurityHandler().isValid(username, password)) {
-            call.sessions.set(Constants.COOKIE_NAME.value, Session(username!!))
-            call.respondHtmlTemplate(LoginSuccessfulTemplate()) {
-                greeting {
+            val session = Session(username!!)
+            call.sessions.set(Constants.COOKIE_NAME.value, session)
+            call.respondHtmlTemplate(BookTemplate(session, DataManager.allBooks())) {
+                searchfilter {
                     +"You are logged in as $username and a cookie has been created"
                 }
             }

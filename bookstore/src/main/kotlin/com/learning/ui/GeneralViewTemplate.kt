@@ -1,11 +1,11 @@
 package com.learning.ui
 
+import com.learning.routes.Session
 import io.ktor.server.html.*
 import kotlinx.html.*
 
-class GeneralViewTemplate : Template<HTML> {
+class GeneralViewTemplate(private val session: Session? = null) : Template<HTML> {
     val content = Placeholder<HtmlBlockTag>()
-    val menu = TemplatePlaceholder<NavigationTemplate>()
 
     override fun HTML.apply() {
         head {
@@ -20,11 +20,27 @@ class GeneralViewTemplate : Template<HTML> {
         }
 
         body {
-            insert(NavigationTemplate(), menu)
+            insert(NavigationTemplate()) {
+                menuitems {
+                    a(classes = "nav-link", href = Endpoints.HOME.url) { +"Home" }
+                }
+                if (session == null) {
+                    menuitems {
+                        a(classes = "nav-link", href = Endpoints.LOGIN.url) { +"Login" }
+                    }
+                } else {
+                    menuitems {
+                        a(classes = "nav-link", href = Endpoints.LOGOUT.url) { +"Logout" }
+                    }
+                    menuitems {
+                        a(classes = "nav-link", href = Endpoints.BOOKS.url) { +"Books" }
+                    }
+                }
+            }
 
             div(classes = "container") {
                 div(classes = "row") {
-                    div(classes = "col-md-6 offset-md-3") {
+                    div(classes = "col-md-12") {
                         insert(content)
                     }
                 }
