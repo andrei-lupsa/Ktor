@@ -18,7 +18,7 @@ object DataManager {
     private val log = LoggerFactory.getLogger(DataManager.javaClass)
 
     init {
-        val mongoClient = MongoClient.create() //default mongodb://localhost
+        val mongoClient = MongoClient.create("mongodb://mymongo")
         val database = mongoClient.getDatabase("bookstore")
         bookCollection = database.getCollection("books")
         cartCollection = database.getCollection("cart")

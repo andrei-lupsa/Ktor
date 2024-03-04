@@ -1,5 +1,12 @@
 version: '3'
 services:
+  bookstore:
+    image: bookstore:latest
+    ports:
+      - 8080:8080
+    depends_on:
+      mymongo:
+        condition: service_started
   mymongo:
     image: mongo:latest
     ports:
